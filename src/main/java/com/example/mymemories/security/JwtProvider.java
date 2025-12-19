@@ -15,27 +15,11 @@ import java.util.Date;
 @Component
 public class JwtProvider {
 
-    private final String jwtSecret;
-    private final long jwtExpirationInMS;
+    @Value("${app.jwtSecret}")
+    private String jwtSecret;
 
-    // Constructor injection for safer environment variable binding
-    public JwtProvider(
-            @Value("${app.jwtSecret}") String jwtSecret,
-            @Value("${app.jwtExpirationInMS}") long jwtExpirationInMS
-    ) {
-        if (jwtSecret == null || jwtSecret.isBlank()) {
-            throw new IllegalArgumentException("JWT secret is missing! Please set app.jwtSecret in properties or environment variables.");
-        }
-        if (jwtSecret.length() < 32) {
-            throw new IllegalArgumentException("JWT secret must be at least 32 characters long for HS256 encryption.");
-        }
-        if (jwtExpirationInMS <= 0) {
-            throw new IllegalArgumentException("JWT expiration must be greater than 0.");
-        }
-
-        this.jwtSecret = jwtSecret;
-        this.jwtExpirationInMS = jwtExpirationInMS;
-    }
+    @Value("${app.jwtExpirationInMS}")
+    private int jwtExpirationInMS;
 
     // Convert secret string to SecretKey
     private SecretKey key() {
@@ -60,13 +44,10 @@ public class JwtProvider {
     // Validate JWT token
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder()
-                .setSigningKey(key())
-                .build()
-                .parseClaimsJws(token);
+            Jwts.parserBuilder().setSigningKey(key()).build().parseClaimsJws(token);
             return true;
         } catch (JwtException e) {
-            // Optional: log exception
+            // You can log the exception here
             return false;
         }
     }
