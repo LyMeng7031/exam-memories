@@ -15,11 +15,17 @@ import java.util.Date;
 @Component
 public class JwtProvider {
 
-    @Value("${app.jwtSecret}")
-    private String jwtSecret;
+    private final String jwtSecret;
+    private final long jwtExpirationInMS;
 
-    @Value("${app.jwtExpirationInMS}")
-    private int jwtExpirationInMS;
+    // Constructor injection for safer environment variable binding
+    public JwtProvider(
+            @Value("${app.jwtSecret}") String jwtSecret,
+            @Value("${app.jwtExpirationInMS}") long jwtExpirationInMS
+    ) {
+        this.jwtSecret = jwtSecret;
+        this.jwtExpirationInMS = jwtExpirationInMS;
+    }
 
     // Convert secret string to SecretKey
     private SecretKey key() {
@@ -44,10 +50,13 @@ public class JwtProvider {
     // Validate JWT token
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(key()).build().parseClaimsJws(token);
+            Jwts.parserBuilder()
+                .setSigningKey(key())
+                .build()
+                .parseClaimsJws(token);
             return true;
         } catch (JwtException e) {
-            // You can log the exception here
+            // Optional: log exception
             return false;
         }
     }
