@@ -23,6 +23,16 @@ public class JwtProvider {
             @Value("${app.jwtSecret}") String jwtSecret,
             @Value("${app.jwtExpirationInMS}") long jwtExpirationInMS
     ) {
+        if (jwtSecret == null || jwtSecret.isBlank()) {
+            throw new IllegalArgumentException("JWT secret is missing! Please set app.jwtSecret in properties or environment variables.");
+        }
+        if (jwtSecret.length() < 32) {
+            throw new IllegalArgumentException("JWT secret must be at least 32 characters long for HS256 encryption.");
+        }
+        if (jwtExpirationInMS <= 0) {
+            throw new IllegalArgumentException("JWT expiration must be greater than 0.");
+        }
+
         this.jwtSecret = jwtSecret;
         this.jwtExpirationInMS = jwtExpirationInMS;
     }
